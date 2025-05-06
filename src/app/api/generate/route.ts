@@ -5,6 +5,7 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 const GEMINI_LLM = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-pro-preview-03-25",
   temperature: 0.5, // Reduced for more structured output
+  apiKey : process.env.GOOGLE_API_KEY,
 });
 
 const SYSTEM_PROMPT = `You are a markmap expert. Generate markdown with this exact structure:

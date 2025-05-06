@@ -29,8 +29,8 @@ export default function Home() {
 
       const markdownData = await markdownResponse.json();
       setMarkdown(markdownData.data);
-    } catch (err) {
-      setError("Failed to generate mindmap. Please try again.");
+    } catch (error) {
+      setError("Failed to generate mindmap. Please try again." + error);
     } finally {
       setIsLoading(false);
     }
@@ -110,8 +110,8 @@ export default function Home() {
         <div className="bg-blue-50 rounded-lg p-4 space-y-2 text-sm text-gray-600">
           <p className="font-medium">💡 Tips:</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>Start with specific learning objectives (e.g., "Master React Hooks in 3 days")</li>
-            <li>Use natural language (e.g., "Complete guide to Next.js authentication")</li>
+            <li>Start with specific learning objectives (e.g., &quot;Master React Hooks in 3 days&quot;)</li>
+            <li>Use natural language (e.g., &quot;Complete guide to Next.js authentication&quot;)</li>
             <li>Edit the markdown directly to customize your mindmap</li>
           </ul>
         </div>

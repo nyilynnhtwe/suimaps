@@ -21,7 +21,7 @@ export default function MarkmapViewer({ markdown }: MarkmapViewerProps) {
       const newMarkmap = Markmap.create(svgRef.current, { autoFit: false }, root);
       setMarkmap(newMarkmap);
     }
-  }, [markdown]);
+  }, [markdown,transformer]);
 
   const handleExportPdf = async () => {
     if (!svgRef.current || !markmap) return;
