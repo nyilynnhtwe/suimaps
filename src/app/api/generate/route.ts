@@ -1,7 +1,6 @@
 // app/api/generate/route.ts
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 
-process.env.GOOGLE_API_KEY = "";
 
 const GEMINI_LLM = new ChatGoogleGenerativeAI({
   model: "gemini-2.5-pro-preview-03-25",
