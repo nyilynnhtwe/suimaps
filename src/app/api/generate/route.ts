@@ -70,7 +70,7 @@ export async function POST(request: Request) {
     ]);
 
     // Clean up Gemini's response
-    let  content :String = response.content as string;
+    let content: string = response.content as string;
     content = content
       .replace(/^```markdown/g, '')
       .replace(/```$/g, '')
