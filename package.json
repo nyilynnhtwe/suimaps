@@ -11,15 +11,20 @@
   "dependencies": {
     "@langchain/google-genai": "^0.2.6",
     "d3": "^7.9.0",
+    "dom-to-image": "^2.6.0",
     "html2pdf.js": "^0.10.3",
+    "install": "^0.13.0",
     "jspdf": "^3.0.1",
     "lucide-react": "^0.507.0",
     "markmap-lib": "^0.18.11",
     "markmap-view": "^0.18.10",
     "next": "15.3.1",
+    "npm": "^11.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "svg2pdf.js": "^2.5.0"
+    "svg-to-pdfkit": "^0.1.8",
+    "svg2pdf.js": "^2.5.0",
+    "svg2png-wasm": "^1.4.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
