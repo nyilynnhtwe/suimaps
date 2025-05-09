@@ -1,151 +1,182 @@
 // app/page.tsx
 "use client";
-import { useState } from "react";
-import MindmapViewer from "./components/MindMapView";
-import { Loader2, Edit3, Lightbulb, Github, Twitter } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { FaLightbulb, FaCopy, FaMagic, FaFileDownload } from "react-icons/fa";
+import MermaidMindMap, { MermaidMindMapHandle } from "./components/MermaidMindMap";
 
-export default function Home() {
-  const [userPrompt, setUserPrompt] = useState("");
-  const [markdown, setMarkdown] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+const DEFAULT_CODE = `
+mindmap
+  root((mindmap))
+    Origins
+      Long history
+      ::icon(fa fa-book)
+      Popularisation
+        British popular psychology author Tony Buzan
+    Research
+      On effectiveness<br/>and features
+      On Automatic creation
+        Uses
+            Creative techniques
+            Strategic planning
+            Argument mapping
+    Tools
+      Pen and paper
+      Mermaid`;
+
+export default function MindmapEditor() {
+  const mindMapRef = useRef<MermaidMindMapHandle>(null);
+  const [code, setCode] = useState(DEFAULT_CODE);
+  const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
+  const [isValid, setIsValid] = useState(true);
+  const [isGenerating, setIsGenerating] = useState(false);
 
-  const generateMarkdown = async () => {
-    if (!userPrompt.trim()) {
-      setError("Please enter a valid prompt");
+  // API Call Handler
+  const generateMindmap = async () => {
+    if (!prompt.trim()) {
+      setError("Please enter a description");
       return;
     }
 
     try {
-      setIsLoading(true);
+      setIsGenerating(true);
       setError("");
-      const markdownResponse = await fetch("/api/generate", {
+
+      const response = await fetch("/api/generate", {
         method: "POST",
-        body: JSON.stringify({ prompt: userPrompt }),
         headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ prompt }),
       });
 
-      if (!markdownResponse.ok) throw new Error("Generation failed");
+      if (!response.ok) throw new Error("Generation failed");
 
-      const markdownData = await markdownResponse.json();
-      setMarkdown(markdownData.data);
-    } catch (error) {
-      setError("Failed to generate mindmap. Please try again." + error);
+      const { data } = await response.json();
+      setCode(data);
+    } catch (err) {
+      setError(err.message || "Failed to generate mindmap");
     } finally {
-      setIsLoading(false);
+      setIsGenerating(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(code);
+  };
+
+  const handleSavePng = async () => {
+    try {
+      await mindMapRef.current?.saveAsPng();
+    } catch (err) {
+      setError('Failed to save PNG');
+    }
+  };
+
+  const handleSavePdf = async () => {
+    console.log("Start Saving PDF...");
+    
+    try {
+      console.log("Saving PDF...");
+      await mindMapRef.current?.saveAsPdf();
+      console.log("Saved PDF...");
+    } catch (err) {
+      setError('Failed to save PDF');
     }
   };
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 p-4 md:p-8">
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header Section with Credits */}
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-center space-y-2">
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-800">
-              A Kyan Pay | အကြံပေး
-            </h1>
-            <br />
-            <p className="text-gray-600 text-sm md:text-base">
-              Transform your learning goals into structured mindmaps
-            </p>
-          </div>
-          <div className="flex gap-4">
-            <a
-              href="https://github.com/nyilynnhtwe"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              <Github size={24} />
-            </a>
-            <a
-              href="https://x.com/lynnthelight"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-gray-600 hover:text-blue-600 transition-colors"
-            >
-              <Twitter size={24} />
-            </a>
-          </div>
-        </div>
-
-        {/* Main Content (responsive adjustments) */}
-        <div className="bg-white rounded-xl shadow-lg p-4 md:p-6 space-y-4">
+   <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* AI Generation Section */}
+        <div className="bg-white rounded-xl shadow-lg p-6">
           <div className="flex flex-col md:flex-row gap-4">
             <input
-              type="text"
-              value={userPrompt}
-              onChange={(e) => setUserPrompt(e.target.value)}
-              className="w-full md:flex-1 px-4 py-2 md:py-3 border flex-1 px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your learning goal..."
-              onKeyDown={(e) => e.key === 'Enter' && generateMarkdown()}
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              placeholder="Describe your mindmap..."
+              className="flex-1 p-3 border rounded-lg"
+              disabled={isGenerating}
             />
             <button
-              onClick={generateMarkdown}
-              disabled={isLoading}
-              className="w-full md:w-auto px-4 py-2 md:px-6 md:py-3 bg-gradient px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-700 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all duration-300 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+              onClick={generateMindmap}
+              disabled={isGenerating}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
             >
-              {isLoading ? (
+              {isGenerating ? (
                 <>
-                  <Loader2 className="animate-spin" />
+                  <FaMagic className="animate-pulse" />
                   Generating...
                 </>
               ) : (
                 <>
-                  <Lightbulb size={18} />
-                  Generate Mindmap
+                  <FaMagic />
+                  AI Generate
                 </>
               )}
             </button>
           </div>
-
-          {error && (
-            <div className="p-3 bg-red-50 text-red-700 rounded-lg flex items-center gap-2">
-              ⚠️ {error}
-            </div>
-          )}
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-gray-600">
-              <Edit3 size={16} />
-              <span className="font-medium">Markdown Editor</span>
-            </div>
-            <textarea
-              value={markdown}
-              onChange={(e) => setMarkdown(e.target.value)}
-              className="w-full h-48 md:h-64 px-4 py-3 border w-full h-64 px-4 py-3 border border-gray-200 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none font-mono text-sm"
-              placeholder="Generated Markdown will appear here..."
-            />
-          </div>
+          {error && <div className="mt-2 text-red-500">{error}</div>}
         </div>
 
-        {/* {markdown && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-xl font-semibold mb-4 text-gray-800">
-              Interactive Mindmap
-            </h2>
-            <MindmapViewer markdown={markdown} />
-          </div>
-        )} */}
-        <MindmapViewer markdown={markdown} />
-        <div className="bg-blue-50 rounded-lg p-4 space-y-2 text-sm text-gray-600">
-          <p className="font-medium">💡 Tips:</p>
-          <ul className="list-disc list-inside space-y-1">
-            <li>Start with specific learning objectives (e.g., &quot;Master React Hooks in 3 days&quot;)</li>
-            <li>Use natural language (e.g., &quot;Complete guide to Next.js authentication&quot;)</li>
-            <li>Edit the markdown directly to customize your mindmap</li>
-          </ul>
-        </div>
+        <div className="grid grid-cols-1 gap-6">
+          {/* Editor Section */}
+          <div className="bg-white rounded-xl shadow-lg p-6 h-[400px] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold flex items-center gap-2">
+                <FaLightbulb className="text-blue-600" />
+                Editor
+              </h2>
+              <button
+                onClick={handleCopy}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
+              >
+                <FaCopy className="w-4 h-4" />
+                Copy
+              </button>
+            </div>
 
-        {/* Copyright Section */}
-        <div className="text-center text-sm text-gray-500 pt-8 border-t border-gray-200 mt-8">
-          <p>
-            © {new Date().getFullYear()} A Kyan Pay. All rights reserved. | 
-            Made with <span className="text-red-500">❤️</span> in Yangon
-          </p>
+            <div className="relative flex-1">
+              <textarea
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className={`w-full h-full p-4 font-mono text-sm border rounded-lg focus:outline-none ${isValid ? "border-gray-200" : "border-red-500"
+                  }`}
+                spellCheck={false}
+              />
+
+              {!isValid && (
+                <div className="absolute bottom-4 left-4 right-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
+                  {error}
+                </div>
+              )}
+            </div>
+          </div>
+
+            <div className="bg-white rounded-xl shadow-lg p-6 h-[1000px] flex flex-col">
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-xl font-semibold">Preview</h2>
+            <div className="flex gap-2">
+              <button
+                onClick={handleSavePng}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
+              >
+                <FaFileDownload />
+                PNG
+              </button>
+              <button
+                onClick={handleSavePdf}
+                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
+              >
+                <FaFileDownload />
+                PDF
+              </button>
+            </div>
+          </div>
+          <div className="flex-1 border rounded-lg overflow-hidden relative">
+            <MermaidMindMap ref={mindMapRef} code={code} />
+          </div>
         </div>
       </div>
     </div>
+  </div>
   );
 }
