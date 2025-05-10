@@ -1,7 +1,7 @@
 // app/page.tsx
 "use client";
 import { useState, useRef } from "react";
-import { FaLightbulb, FaCopy, FaMagic, FaFileDownload, FaInfoCircle, FaMousePointer, FaEdit, FaRegLightbulb } from "react-icons/fa";
+import { FaLightbulb, FaCopy, FaMagic, FaFileDownload, FaInfoCircle, FaMousePointer, FaEdit } from "react-icons/fa";
 import MermaidMindMap, { MermaidMindMapHandle } from "./components/MermaidMindMap";
 import { motion, AnimatePresence } from "framer-motion";
 

@@ -115,11 +115,8 @@ const MermaidMindMap = forwardRef<MermaidMindMapHandle, { code: string }>(({ cod
       startOnLoad: false,
       theme: 'forest',
       mindmap: {
-        nodeSpacing: 400,
         padding: 50,
         useMaxWidth: true,
-        rankSpacing: 40, // Vertical spacing between levels
-        curve: "basis", // Curve style for connecting lines
       },
     });
 
