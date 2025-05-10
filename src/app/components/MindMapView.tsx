@@ -31,8 +31,8 @@ export default function MarkmapViewer({ markdown }: MarkmapViewerProps) {
       if (!div) return;
 
       // Calculate position
-      const x = parseFloat(foreignObject.getAttribute('x') || 0);
-      const y = parseFloat(foreignObject.getAttribute('y') || 0) + verticalOffset;
+      const x : string = foreignObject.getAttribute('x') || '0';
+      const y : string = foreignObject.getAttribute('y') || '0' + verticalOffset;
       const styles = getComputedStyle(div);
 
       // Create text group

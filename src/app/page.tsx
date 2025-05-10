@@ -53,7 +53,9 @@ export default function MindmapEditor() {
       const { data } = await response.json();
       setCode(data);
     } catch (err) {
-      setError(err.message || "Failed to generate mindmap");
+      if (err instanceof Error) {
+        setError(err.message || "Failed to generate mindmap");
+      }
     } finally {
       setIsGenerating(false);
     }
