@@ -1,6 +1,6 @@
 // app/page.tsx
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useState, useRef } from "react";
 import { FaLightbulb, FaCopy, FaMagic, FaFileDownload } from "react-icons/fa";
 import MermaidMindMap, { MermaidMindMapHandle } from "./components/MermaidMindMap";
 
@@ -28,7 +28,6 @@ export default function MindmapEditor() {
   const [code, setCode] = useState(DEFAULT_CODE);
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
-  const [isValid, setIsValid] = useState(true);
   const [isGenerating, setIsGenerating] = useState(false);
 
   // API Call Handler
@@ -69,24 +68,28 @@ export default function MindmapEditor() {
     try {
       await mindMapRef.current?.saveAsPng();
     } catch (err) {
-      setError('Failed to save PNG');
+      if(err instanceof Error) {
+        setError(err.message || "Failed to save PNG");
+      }
     }
   };
 
   const handleSavePdf = async () => {
     console.log("Start Saving PDF...");
-    
+
     try {
       console.log("Saving PDF...");
       await mindMapRef.current?.saveAsPdf();
       console.log("Saved PDF...");
     } catch (err) {
-      setError('Failed to save PDF');
+      if(err instanceof Error) {
+        setError(err.message || "Failed to save PDF");
+      }
     }
   };
 
   return (
-   <div className="min-h-screen bg-gray-50 p-4 md:p-8">
+    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* AI Generation Section */}
         <div className="bg-white rounded-xl shadow-lg p-6">
@@ -140,45 +143,40 @@ export default function MindmapEditor() {
               <textarea
                 value={code}
                 onChange={(e) => setCode(e.target.value)}
-                className={`w-full h-full p-4 font-mono text-sm border rounded-lg focus:outline-none ${isValid ? "border-gray-200" : "border-red-500"
-                  }`}
+                className={`w-full h-full p-4 font-mono text-sm border rounded-lg focus:outline-none "border-gray-200" }`}
                 spellCheck={false}
               />
 
-              {!isValid && (
-                <div className="absolute bottom-4 left-4 right-4 p-3 bg-red-50 text-red-600 rounded-lg text-sm">
-                  {error}
-                </div>
-              )}
+
             </div>
           </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-6 h-[1000px] flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <h2 className="text-xl font-semibold">Preview</h2>
-            <div className="flex gap-2">
-              <button
-                onClick={handleSavePng}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
-              >
-                <FaFileDownload />
-                PNG
-              </button>
-              <button
-                onClick={handleSavePdf}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
-              >
-                <FaFileDownload />
-                PDF
-              </button>
+          <div className="bg-white rounded-xl shadow-lg p-6 h-[1000px] flex flex-col">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Preview</h2>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleSavePng}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
+                >
+                  <FaFileDownload />
+                  PNG
+                </button>
+                <button
+                  onClick={handleSavePdf}
+                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
+                >
+                  <FaFileDownload />
+                  PDF
+                </button>
+              </div>
             </div>
-          </div>
-          <div className="flex-1 border rounded-lg overflow-hidden relative">
-            <MermaidMindMap ref={mindMapRef} code={code} />
+            <div className="flex-1 border rounded-lg overflow-hidden relative">
+              <MermaidMindMap ref={mindMapRef} code={code} />
+            </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
   );
 }

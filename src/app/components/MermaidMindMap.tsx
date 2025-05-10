@@ -172,4 +172,6 @@ const MermaidMindMap = forwardRef<MermaidMindMapHandle, { code: string }>(({ cod
   );
 });
 
+MermaidMindMap.displayName = 'MermaidMindMap';
+
 export default MermaidMindMap;
