@@ -1,8 +1,9 @@
 // app/page.tsx
 "use client";
 import { useState, useRef } from "react";
-import { FaLightbulb, FaCopy, FaMagic, FaFileDownload } from "react-icons/fa";
+import { FaLightbulb, FaCopy, FaMagic, FaFileDownload, FaInfoCircle, FaMousePointer, FaEdit, FaRegLightbulb } from "react-icons/fa";
 import MermaidMindMap, { MermaidMindMapHandle } from "./components/MermaidMindMap";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DEFAULT_CODE = `
 mindmap
@@ -68,7 +69,7 @@ export default function MindmapEditor() {
     try {
       await mindMapRef.current?.saveAsPng();
     } catch (err) {
-      if(err instanceof Error) {
+      if (err instanceof Error) {
         setError(err.message || "Failed to save PNG");
       }
     }
@@ -82,7 +83,7 @@ export default function MindmapEditor() {
       await mindMapRef.current?.saveAsPdf();
       console.log("Saved PDF...");
     } catch (err) {
-      if(err instanceof Error) {
+      if (err instanceof Error) {
         setError(err.message || "Failed to save PDF");
       }
     }
@@ -91,20 +92,77 @@ export default function MindmapEditor() {
   return (
     <div className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        {/* AI Generation Section */}
-        <div className="bg-white rounded-xl shadow-lg p-6">
+        {/* How To Section */}
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-blue-50 rounded-xl shadow-lg p-6"
+        >
+          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-blue-800">
+            <FaInfoCircle className="flex-shrink-0" />
+            How to Create Your Mindmap
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="flex items-start gap-3">
+              <FaMousePointer className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium mb-1">1. Describe</h3>
+                <p className="text-sm text-gray-600">Enter your mindmap concept in the AI input field</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <FaMagic className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium mb-1">2. Generate</h3>
+                <p className="text-sm text-gray-600">Click AI Generate to create initial structure</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <FaEdit className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium mb-1">3. Refine</h3>
+                <p className="text-sm text-gray-600">Edit the code directly in the editor panel</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3">
+              <FaFileDownload className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+              <div>
+                <h3 className="font-medium mb-1">4. Export</h3>
+                <p className="text-sm text-gray-600">Download as PNG/PDF or copy the code</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* AI Generation Section - Updated with animations */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="bg-white rounded-xl shadow-lg p-6"
+        >
           <div className="flex flex-col md:flex-row gap-4">
-            <input
+            <motion.input
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
               placeholder="Describe your mindmap..."
-              className="flex-1 p-3 border rounded-lg"
+              className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
               disabled={isGenerating}
+              whileHover={{ scale: 1.01 }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  generateMindmap();
+                }
+              }}
             />
-            <button
+
+            <motion.button
               onClick={generateMindmap}
               disabled={isGenerating}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-blue-700 transition-colors"
+              whileHover={{ scale: isGenerating ? 1 : 1.05 }}
+              whileTap={{ scale: 0.95 }}
             >
               {isGenerating ? (
                 <>
@@ -117,14 +175,30 @@ export default function MindmapEditor() {
                   AI Generate
                 </>
               )}
-            </button>
+            </motion.button>
           </div>
-          {error && <div className="mt-2 text-red-500">{error}</div>}
-        </div>
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="mt-2 text-red-500"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.div>
 
         <div className="grid grid-cols-1 gap-6">
-          {/* Editor Section */}
-          <div className="bg-white rounded-xl shadow-lg p-6 h-[400px] flex flex-col">
+          {/* Editor Section with animations */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="bg-white rounded-xl shadow-lg p-6 h-[400px] flex flex-col"
+          >
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold flex items-center gap-2">
                 <FaLightbulb className="text-blue-600" />
@@ -149,9 +223,9 @@ export default function MindmapEditor() {
 
 
             </div>
-          </div>
+          </motion.div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 h-[1000px] flex flex-col">
+          <motion.div className="bg-white rounded-xl shadow-lg p-6 h-[1000px] flex flex-col">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Preview</h2>
               <div className="flex gap-2">
@@ -174,7 +248,7 @@ export default function MindmapEditor() {
             <div className="flex-1 border rounded-lg overflow-hidden relative">
               <MermaidMindMap ref={mindMapRef} code={code} />
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </div>
