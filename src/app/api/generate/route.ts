@@ -2,7 +2,8 @@ import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { HarmCategory, HarmBlockThreshold } from "@google/generative-ai";
 
 const GEMINI_LLM = new ChatGoogleGenerativeAI({
-  model: "gemini-2.5-pro-preview-03-25",
+  // model: "gemini-2.5-pro-preview-03-25",
+  model : "gemini-2.5-flash-preview-04-17",
   temperature: 0.5,
   apiKey: process.env.GOOGLE_API_KEY,
   safetySettings:
@@ -37,10 +38,11 @@ const SYSTEM_PROMPT = `Generate STRICTLY VALID Mermaid mindmap syntax using thes
 2. Shapes: circle, rounded, square, bang, cloud, hexagon
 3. Indentation hierarchy (2 spaces per level)
 4. Icons: ::icon(fa fa-icon)
-5. Remove opening and closing square brackets
-6. Remove opening and closing curly brackets
-7. Remove opening and closing triple brackets
-8. Valid Example:
+5. Icons must be at another seperate line
+6. No opening and closing square brackets
+7. No opening and closing curly brackets
+8. No opening and closing triple brackets
+9. Valid Example:
 mindmap
   root((mindmap))
     Origins
