@@ -1,1 +1,8 @@
 @import "tailwindcss";
+
+ .mermaid .node rect { 
+    transform: translate(20px, 20px); /* Shift nodes */
+  }
+  .mermaid path { 
+    stroke-width: 2px; /* Adjust connector lines */
+  }

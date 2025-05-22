@@ -245,9 +245,14 @@ export default function MindmapEditor() {
                 </button>
               </div>
             </div>
-            <div className="flex-1 border rounded-lg overflow-hidden relative">
-              <MermaidMindMap ref={mindMapRef} code={code} />
-            </div>
+            <motion.div
+              className="bg-white rounded-xl shadow-lg p-6 flex-1 flex flex-col"
+              style={{ minHeight: '600px' }}
+            >
+              <div className="flex-1 border rounded-lg overflow-hidden relative">
+                <MermaidMindMap ref={mindMapRef} code={code} />
+              </div>
+            </motion.div>
           </motion.div>
         </div>
       </div>

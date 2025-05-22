@@ -62,46 +62,60 @@ const MermaidMindMap = forwardRef<MermaidMindMapHandle, { code: string }>(({ cod
       console.error('PNG export error:', err);
     }
   };
+const handleSaveAsPdf = async () => {
+  if (!svgElement) return;
 
-  const handleSaveAsPdf = async () => {
-    if (!svgElement) return;
+  try {
+    // Get SVG dimensions from viewBox
+    const viewBox = svgElement.getAttribute('viewBox')?.split(/\s+|,/).map(Number) || [0, 0, 1200, 1000];
+    const [,, width, height] = viewBox;
+    
+    // Create PDF with A4 dimensions
+    const pdf = new jsPDF({
+      orientation: width > height ? 'landscape' : 'portrait',
+      unit: 'mm',
+      format: 'a4'
+    });
 
-    try {
-      // Get SVG dimensions
-      const viewBox = svgElement.getAttribute('viewBox')?.split(' ') || ['0', '0', '1200', '1000'];
-      const width = parseInt(viewBox[2]);
-      const height = parseInt(viewBox[3]);
+    // Calculate scaling to fit PDF page
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const scale = Math.min(pageWidth / width, pageHeight / height) * 0.95;
 
-      // Create canvas with proper aspect ratio
-      const canvas = document.createElement('canvas');
-      const scale = 2; // 2x resolution
-      canvas.width = width * scale;
-      canvas.height = height * scale;
+    // Create canvas with proper scaling
+    const canvas = document.createElement('canvas');
+    canvas.width = width * 2; // 2x resolution
+    canvas.height = height * 2;
 
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Could not create canvas context');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) throw new Error('Could not create canvas context');
 
-      ctx.scale(scale, scale);
-      ctx.imageSmoothingEnabled = true;
+    ctx.scale(2, 2);
+    ctx.imageSmoothingEnabled = true;
 
-      const svgData = new XMLSerializer().serializeToString(svgElement);
-      const v = await Canvg.from(ctx, svgData);
-      await v.render();
+    const svgData = new XMLSerializer().serializeToString(svgElement);
+    const v = await Canvg.from(ctx, svgData);
+    await v.render();
 
-      // Create PDF with proper dimensions
-      const pdf = new jsPDF({
-        orientation: width > height ? 'landscape' : 'portrait',
-        unit: 'mm',
-        format: [width * 0.35, height * 0.35] // Convert pixels to mm (approx)
-      });
+    // Add image to PDF with proper scaling
+    const imgData = canvas.toDataURL('image/png', 1.0);
+    pdf.addImage(
+      imgData,
+      'PNG',
+      (pageWidth - width * scale) / 2, // Center horizontally
+      (pageHeight - height * scale) / 2, // Center vertically
+      width * scale,
+      height * scale
+    );
 
-      const imgData = canvas.toDataURL('image/png', 1.0);
-      pdf.addImage(imgData, 'PNG', 0, 0, pdf.internal.pageSize.getWidth(), pdf.internal.pageSize.getHeight());
-      pdf.save('mindmap.pdf');
-    } catch (err) {
-      console.error('PDF export error:', err);
+    pdf.save('mindmap.pdf');
+  } catch (err) {
+    console.error('PDF export error:', err);
+    if (err instanceof Error) {
+      setError(err.message || 'Failed to save PDF');
     }
-  };
+  }
+};
 
   useImperativeHandle(ref, () => ({
     saveAsPng: handleSaveAsPng,
@@ -114,11 +128,15 @@ const MermaidMindMap = forwardRef<MermaidMindMapHandle, { code: string }>(({ cod
     mermaid.initialize({
       startOnLoad: false,
       theme: 'forest',
+      themeCSS: '.mindmap-node{font-size: 8px;}',
       mindmap: {
-        padding: 50,
-        useMaxWidth: true,
+        useMaxWidth: false, // Critical for dynamic sizing
       },
+      flowchart: {
+        useMaxWidth: false,
+      }
     });
+
 
     const renderDiagram = async () => {
       setError(null);
@@ -138,9 +156,21 @@ const MermaidMindMap = forwardRef<MermaidMindMapHandle, { code: string }>(({ cod
         containerRef.current.innerHTML = svg;
         const svgEl = containerRef.current.querySelector('svg');
 
+        // Update the SVG manipulation code in useEffect:
+        // In MermaidMindMap component's useEffect render function
         if (svgEl) {
-          svgEl.removeAttribute('width');
-          svgEl.removeAttribute('height');
+          // Get the actual SVG dimensions from Mermaid's render
+          const bbox = svgEl.getBBox();
+          const padding = 20; // Add some padding around content
+
+          // Set viewBox to contain all elements
+          svgEl.setAttribute(
+            'viewBox',
+            `${bbox.x - padding} ${bbox.y - padding} 
+     ${bbox.width + padding * 2} ${bbox.height + padding * 2}`
+          );
+
+          // Maintain responsive scaling
           svgEl.style.width = '100%';
           svgEl.style.height = '100%';
           setSvgElement(svgEl);
@@ -167,6 +197,7 @@ const MermaidMindMap = forwardRef<MermaidMindMapHandle, { code: string }>(({ cod
       <div
         ref={containerRef}
         className="absolute inset-0 p-4 overflow-auto"
+        style={{ minWidth: '800px', minHeight: '600px' }} // Base minimum size
       />
     </div>
   );
