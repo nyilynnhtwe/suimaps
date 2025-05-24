@@ -11,6 +11,8 @@
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.0",
     "@langchain/google-genai": "^0.2.6",
+    "@mysten/dapp-kit": "^0.16.4",
+    "@tanstack/react-query": "^5.76.1",
     "@vercel/analytics": "^1.5.0",
     "canvg": "^4.0.3",
     "d3": "^7.9.0",

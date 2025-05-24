@@ -1,7 +1,17 @@
-import type { Metadata } from "next";
+"use client";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next"
+import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import * as React from "react";
+import "@mysten/dapp-kit/dist/index.css";
+import "@radix-ui/themes/styles.css";
+
+import { networkConfig } from "./utils/networkConfig";
+
+const queryClient = new QueryClient();
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,10 +23,10 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "A Kyan Pay",
-  description: "Transform your learning goals into structured mindmaps",
-};
+// export const metadata: Metadata = {
+//   title: "A Kyan Pay",
+//   description: "Transform your learning goals into structured mindmaps",
+// };
 
 export default function RootLayout({
   children,
@@ -28,7 +38,13 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <QueryClientProvider client={queryClient}>
+          <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
+            <WalletProvider autoConnect>
+              {children}
+            </WalletProvider>
+          </SuiClientProvider>
+        </QueryClientProvider>
         <Analytics />
       </body>
     </html>

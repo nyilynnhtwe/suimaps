@@ -1,261 +1,186 @@
-// app/page.tsx
 "use client";
-import { useState, useRef } from "react";
-import { FaLightbulb, FaCopy, FaMagic, FaFileDownload, FaInfoCircle, FaMousePointer, FaEdit } from "react-icons/fa";
-import MermaidMindMap, { MermaidMindMapHandle } from "./components/MermaidMindMap";
-import { motion, AnimatePresence } from "framer-motion";
+import { ConnectButton } from "@mysten/dapp-kit";
+import { FaBrain, FaShapes } from "react-icons/fa";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { SiBlockchaindotcom, SiGooglegemini } from "react-icons/si";
 
-const DEFAULT_CODE = `
-mindmap
-  root((mindmap))
-    Origins
-      Long history
-      ::icon(fa fa-book)
-      Popularisation
-        British popular psychology author Tony Buzan
-    Research
-      On effectiveness<br/>and features
-      On Automatic creation
-        Uses
-            Creative techniques
-            Strategic planning
-            Argument mapping
-    Tools
-      Pen and paper
-      Mermaid`;
-
-export default function MindmapEditor() {
-  const mindMapRef = useRef<MermaidMindMapHandle>(null);
-  const [code, setCode] = useState(DEFAULT_CODE);
-  const [prompt, setPrompt] = useState("");
-  const [error, setError] = useState("");
-  const [isGenerating, setIsGenerating] = useState(false);
-
-  // API Call Handler
-  const generateMindmap = async () => {
-    if (!prompt.trim()) {
-      setError("Please enter a description");
-      return;
-    }
-
-    try {
-      setIsGenerating(true);
-      setError("");
-
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt }),
-      });
-
-      if (!response.ok) throw new Error("Generation failed");
-
-      const { data } = await response.json();
-      setCode(data);
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to generate mindmap");
-      }
-    } finally {
-      setIsGenerating(false);
-    }
-  };
-
-  const handleCopy = async () => {
-    await navigator.clipboard.writeText(code);
-  };
-
-  const handleSavePng = async () => {
-    try {
-      await mindMapRef.current?.saveAsPng();
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to save PNG");
-      }
-    }
-  };
-
-  const handleSavePdf = async () => {
-    console.log("Start Saving PDF...");
-
-    try {
-      console.log("Saving PDF...");
-      await mindMapRef.current?.saveAsPdf();
-      console.log("Saved PDF...");
-    } catch (err) {
-      if (err instanceof Error) {
-        setError(err.message || "Failed to save PDF");
-      }
-    }
-  };
-
+const Home = () => {
   return (
-    <div className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* How To Section */}
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
+    <div className="min-h-screen bg-gradient-to-b from-blue-50 to-purple-50">
+      {/* Navbar */}
+      <nav className="sticky top-0 bg-white/80 backdrop-blur-md border-b">
+        <div className="max-w-6xl mx-auto px-4 py-3 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <FaBrain className="text-2xl text-purple-600" />
+            <span className="text-xl font-bold">SuiMaps</span>
+          </div>
+          <ConnectButton />
+        </div>
+      </nav>
+
+      {/* Hero Section */}
+      <section className="max-w-6xl mx-auto px-4 py-20">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="bg-blue-50 rounded-xl shadow-lg p-6"
+          className="text-center"
         >
-          <h2 className="text-xl font-semibold mb-4 flex items-center gap-2 text-blue-800">
-            <FaInfoCircle className="flex-shrink-0" />
-            How to Create Your Mindmap
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div className="flex items-start gap-3">
-              <FaMousePointer className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium mb-1">1. Describe</h3>
-                <p className="text-sm text-gray-600">Enter your mindmap concept in the AI input field</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <FaMagic className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium mb-1">2. Generate</h3>
-                <p className="text-sm text-gray-600">Click AI Generate to create initial structure</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <FaEdit className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium mb-1">3. Refine</h3>
-                <p className="text-sm text-gray-600">Edit the code directly in the editor panel</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <FaFileDownload className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
-              <div>
-                <h3 className="font-medium mb-1">4. Export</h3>
-                <p className="text-sm text-gray-600">Download as PNG/PDF or copy the code</p>
-              </div>
+          <div className="flex justify-center gap-4 mb-6">
+            <div className="bg-white p-3 rounded-full shadow-lg flex items-center gap-2">
+              <SiGooglegemini className="text-2xl text-green-500" />
+              <FaShapes className="text-2xl text-purple-500" />
+              <SiBlockchaindotcom className="text-2xl text-blue-500" />
             </div>
           </div>
-        </motion.div>
-
-        {/* AI Generation Section - Updated with animations */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="bg-white rounded-xl shadow-lg p-6"
-        >
-          <div className="flex flex-col md:flex-row gap-4">
-            <motion.input
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              placeholder="Describe your mindmap..."
-              className="flex-1 p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-              disabled={isGenerating}
-              whileHover={{ scale: 1.01 }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  generateMindmap();
-                }
-              }}
-            />
-
-            <motion.button
-              onClick={generateMindmap}
-              disabled={isGenerating}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg flex items-center gap-2 disabled:opacity-50 hover:bg-blue-700 transition-colors"
-              whileHover={{ scale: isGenerating ? 1 : 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              {isGenerating ? (
-                <>
-                  <FaMagic className="animate-pulse" />
-                  Generating...
-                </>
-              ) : (
-                <>
-                  <FaMagic />
-                  AI Generate
-                </>
-              )}
-            </motion.button>
-          </div>
-          <AnimatePresence>
-            {error && (
-              <motion.div
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="mt-2 text-red-500"
-              >
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
-
-        <div className="grid grid-cols-1 gap-6">
-          {/* Editor Section with animations */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-xl shadow-lg p-6 h-[400px] flex flex-col"
+          <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-green-600 to-purple-600 bg-clip-text text-transparent">
+            Visual Thinking Revolution<br />on Sui Blockchain
+          </h1>
+          <p className="text-xl text-gray-600 mb-8">
+            Transform ideas into structured knowledge maps with AI,<br />then preserve them permanently as Sui Network NFTs
+          </p>
+          <Link 
+            href="/generate" 
+            className="inline-block bg-purple-600 text-white px-8 py-3 rounded-lg hover:bg-purple-700 transition-colors"
           >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold flex items-center gap-2">
-                <FaLightbulb className="text-blue-600" />
-                Editor
-              </h2>
-              <button
-                onClick={handleCopy}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
-              >
-                <FaCopy className="w-4 h-4" />
-                Copy
-              </button>
-            </div>
+            Start Creating
+          </Link>
+        </motion.div>
+      </section>
 
-            <div className="relative flex-1">
-              <textarea
-                value={code}
-                onChange={(e) => setCode(e.target.value)}
-                className={`w-full h-full p-4 font-mono text-sm border rounded-lg focus:outline-none "border-gray-200" }`}
-                spellCheck={false}
-              />
-
-
-            </div>
-          </motion.div>
-
-          <motion.div className="bg-white rounded-xl shadow-lg p-6 h-[1000px] flex flex-col">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-semibold">Preview</h2>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleSavePng}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
-                >
-                  <FaFileDownload />
-                  PNG
-                </button>
-                <button
-                  onClick={handleSavePdf}
-                  className="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg flex items-center gap-2"
-                >
-                  <FaFileDownload />
-                  PDF
-                </button>
-              </div>
-            </div>
+      {/* Features Section */}
+      <section className="max-w-6xl mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">SuiMaps Core Features</h2>
+        <div className="grid md:grid-cols-3 gap-8">
+          {[
+            {
+              icon: SiGooglegemini,
+              title: "AI Concept Mapping",
+              text: "Gemini-powered analysis structures your raw ideas",
+              badge: "Natural Language Processing"
+            },
+            {
+              icon: FaShapes,
+              title: "Smart Visualization",
+              text: "Auto-layout engine creates professional diagrams",
+              badge: "Neural Networks"
+            },
+            {
+              icon: SiBlockchaindotcom,
+              title: "Sui Provenance",
+              text: "Immutable creation records on Sui Blockchain",
+              badge: "Web3 Infrastructure"
+            },
+          ].map((feature, i) => (
             <motion.div
-              className="bg-white rounded-xl shadow-lg p-6 flex-1 flex flex-col"
-              style={{ minHeight: '600px' }}
+              key={i}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.2 }}
+              className="bg-white p-6 rounded-xl shadow-lg relative"
             >
-              <div className="flex-1 border rounded-lg overflow-hidden relative">
-                <MermaidMindMap ref={mindMapRef} code={code} />
+              <div className="absolute top-4 right-4 text-xs bg-gray-100 px-2 py-1 rounded-full">
+                {feature.badge}
+              </div>
+              <feature.icon className="text-3xl text-purple-600 mb-4" />
+              <h3 className="text-xl font-semibold mb-2">{feature.title}</h3>
+              <p className="text-gray-600">{feature.text}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* How It Works Section */}
+      <section className="max-w-6xl mx-auto px-4 py-20">
+        <h2 className="text-3xl font-bold text-center mb-12">Creation Flow</h2>
+        <div className="flex flex-col md:flex-row gap-8 items-center">
+          <div className="flex-1 space-y-8">
+            {[
+              {
+                title: "AI Processing",
+                text: "Natural language analysis extracts key concepts",
+                icon: <SiGooglegemini className="text-lg" />
+              },
+              {
+                title: "Visualization",
+                text: "Automated layout engine organizes nodes",
+                icon: <FaShapes className="text-lg" />
+              },
+              {
+                title: "Sui Minting",
+                text: "Create verifiable NFT with on-chain metadata",
+                icon: <SiBlockchaindotcom className="text-lg" />
+              },
+            ].map((step, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: i * 0.2 }}
+                className="flex items-start gap-4 bg-white p-4 rounded-lg"
+              >
+                <div className="bg-purple-100 text-purple-600 w-12 h-12 rounded-lg flex items-center justify-center">
+                  {step.icon}
+                </div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                  <p className="text-gray-600">{step.text}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+          
+          {/* Preview Section */}
+          <div className="flex-1">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-white p-6 rounded-xl shadow-lg"
+            >
+              <div className="aspect-video bg-gray-50 rounded-lg flex flex-col items-center justify-center p-4">
+                <div className="animate-pulse flex flex-col gap-2 w-full">
+                  <div className="h-4 bg-green-100 rounded w-3/4"></div>
+                  <div className="h-4 bg-green-100 rounded w-1/2 ml-4"></div>
+                  <div className="h-4 bg-green-100 rounded w-2/3 ml-8"></div>
+                  <div className="mt-4 flex items-center gap-2 text-green-500">
+                    <SiBlockchaindotcom />
+                    <span className="text-sm">Minting to Sui...</span>
+                  </div>
+                </div>
+                <div className="mt-4 bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-sm">
+                  Sui NFT Preview
+                </div>
               </div>
             </motion.div>
-          </motion.div>
+          </div>
         </div>
-      </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t bg-white mt-20">
+        <div className="max-w-6xl mx-auto px-4 py-8">
+          <div className="flex flex-col items-center gap-4 text-center">
+            <div className="flex items-center gap-2">
+              <FaBrain className="text-xl text-purple-600" />
+              <span className="text-xl font-bold">SuiMaps</span>
+            </div>
+            <p className="text-gray-600 max-w-xl">
+              Revolutionizing visual thinking through AI-powered mind mapping 
+              and blockchain preservation on the Sui Network
+            </p>
+            <div className="flex gap-4 text-gray-500">
+              <Link href="#" className="hover:text-purple-600">Terms</Link>
+              <Link href="#" className="hover:text-purple-600">Privacy</Link>
+              <Link href="#" className="hover:text-purple-600">Docs</Link>
+            </div>
+            <p className="text-sm text-gray-400 mt-4">
+              © {new Date().getFullYear()} SuiMaps. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
+
+export default Home;
