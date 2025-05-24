@@ -104,6 +104,8 @@ export default function NftChecker() {
                             <div key={nftData.objectId} className="border rounded-lg p-4 hover:shadow-lg transition-shadow">
                                 {item.data?.display?.data?.url ? (
                                     <Image
+                                        width={300}
+                                        height={300}
                                         src={item.data.display.data.url}
                                         alt={item.data.display.data.name || "NFT"}
                                         className="w-full h-48 object-cover mb-2 rounded"
