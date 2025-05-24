@@ -1,51 +1,60 @@
-"use client";
-import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Analytics } from "@vercel/analytics/next"
-import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as React from "react";
 import "@mysten/dapp-kit/dist/index.css";
 import "@radix-ui/themes/styles.css";
+import ClientProviders from "./provider/ClientProvider";
+import { Toaster } from "react-hot-toast";
 
-import { networkConfig } from "./utils/networkConfig";
+// layout.tsx (NO "use client" here)
 
-const queryClient = new QueryClient();
+export const metadata = {
+  title: "SuiMaps - Decentralized Geospatial Platform",
+  description: "Explore and contribute to decentralized mapping powered by the Sui Blockchain",
+  keywords: ["SuiMaps", "DeFi Maps", "Blockchain Mapping", "Sui Blockchain", "Decentralized GIS"],
+  authors: [{ name: "SuiMaps Team" }],
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  openGraph: {
+    title: "SuiMaps - Decentralized Geospatial Platform",
+    description: "Explore and contribute to decentralized mapping powered by the Sui Blockchain",
+    url: process.env.NEXT_PUBLIC_SITE_URL,
+    siteName: "SuiMaps",
+    images: [
+      {
+        url: '/og-banner.jpg',
+        width: 1200,
+        height: 630,
+      },
+    ],
+    locale: 'en_US',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: "SuiMaps - Decentralized Geospatial Platform",
+    description: "Explore and contribute to decentralized mapping powered by the Sui Blockchain",
+    images: ['/twitter-og.jpg'],
+  },
+};
 
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-// export const metadata: Metadata = {
-//   title: "A Kyan Pay",
-//   description: "Transform your learning goals into structured mindmaps",
-// };
-
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <QueryClientProvider client={queryClient}>
-          <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
-            <WalletProvider autoConnect>
-              {children}
-            </WalletProvider>
-          </SuiClientProvider>
-        </QueryClientProvider>
-        <Analytics />
+      <body>
+        {/* Wrap children with a separate ClientProvider */}
+        <ClientProviders>
+          {children}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              style: {
+                background: '#1F2937',
+                color: '#fff',
+                borderRadius: '12px',
+                padding: '16px',
+              },
+            }}
+          />
+        </ClientProviders>
       </body>
     </html>
   );

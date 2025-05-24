@@ -1,12 +1,15 @@
 "use client";
-import { useState, useRef, useEffect } from "react";
-import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+import { useState, useRef } from "react";
+import { ConnectButton, useCurrentAccount, useSignAndExecuteTransaction, useSuiClient, useSuiClientQuery } from "@mysten/dapp-kit";
 import { Container, Flex } from "@radix-ui/themes";
-import { FaMagic, FaInfoCircle, FaEdit, FaBrain, FaShare, FaCommentDots, FaRobot, FaPaintBrush, FaCoins } from "react-icons/fa";
+import { FaMagic, FaInfoCircle, FaEdit, FaShare, FaCommentDots, FaRobot, FaPaintBrush, FaCoins, FaHome, FaCube, FaDollarSign } from "react-icons/fa";
 import { MermaidMindMapHandle } from "../components/MermaidMindMap";
 import MermaidMindMap from "../components/MermaidMindMap";
 import { motion, AnimatePresence } from "framer-motion";
 import { Transaction } from "@mysten/sui/transactions";
+import { Footer } from "../components/Footer";
+import toast from "react-hot-toast";
+import Link from "next/link";
 
 const DEFAULT_CODE = `mindmap
   root((mindmap))
@@ -32,8 +35,25 @@ export default function MindmapEditor() {
   const [prompt, setPrompt] = useState("");
   const [error, setError] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isMinting, setIsMinting] = useState(false);
+  const [metadata, setMetadata] = useState({
+    name: "My Mindmap",
+    description: "A mindmap created with SuiMaps"
+  });
   const account = useCurrentAccount();
   const client = useSuiClient();
+
+  const { data: suiBalance } = useSuiClientQuery("getBalance", {
+    owner: account?.address || "",
+    coinType: "0x2::sui::SUI",
+  });
+
+  // Format balance for display
+  const formattedBalance = suiBalance?.totalBalance
+    ? (Number(suiBalance.totalBalance) / 1e9).toFixed(2)
+    : '---';
+
+
   const { mutate: signAndExecuteTransaction } = useSignAndExecuteTransaction({
     execute: async ({ bytes, signature }) =>
       await client.executeTransactionBlock({
@@ -95,21 +115,27 @@ export default function MindmapEditor() {
   };
 
   const handleMintNFT = async () => {
-    if (!account) return alert("Connect wallet first");
+    if (!account) {
+      toast.error("Please connect your wallet first");
+      return;
+    }
 
     try {
+      // Minting logic
+      setIsMinting(true);
+      const toastId = toast.loading("Minting NFT...");
+
       const tx = new Transaction();
-      const codeBytes = new TextEncoder().encode(code);
-
       tx.moveCall({
-        target: "0xYOUR_PACKAGE_ID::main::mint",
-        arguments: [
-          tx.pure(codeBytes),
-          tx.pure.string(prompt),
-          tx.pure.string(Date.now().toString())
-        ]
-      });
+        target: '0x4ab58320d7c46cfbd912e0875295a5395739e2dc951353f67b8fd49a96cfe7a3::SuiMapsNFT::mint_to_sender',
 
+        arguments: [
+          // using vector and option methods
+          tx.pure.string(metadata.name),
+          tx.pure.string(metadata.description),
+          tx.pure.string(code),
+        ],
+      });
       if (account) {
         signAndExecuteTransaction(
           {
@@ -119,56 +145,63 @@ export default function MindmapEditor() {
           },
           {
             onSuccess: (result) => {
-              console.log('object changes', result.objectChanges);
+              console.log(result);
+              toast.success(
+                <p>
+                  NFT Minted Successfully!
+                </p>,
+                { id: toastId }
+              );
+              setIsMinting(false);
+            },
+            onError: (error) => {
+              console.error(error);
+              toast.error("Minting failed. Please try again.", { id: toastId });
             },
           },
         );
       }
-      alert("Mindmap NFT Minted Successfully!");
     } catch (err) {
       console.error(err);
       setError("Minting failed");
+      toast.error("An unexpected error occurred");
+
     }
   };
-
-  useEffect(() => {
-    const fetchData = async () => {
-      const userAddress = account?.address;
-      console.log(userAddress);
-
-      try {
-        const data = await client.getObject({
-          // owner: userAddress || '',
-          id: "0x5179f5761ed65859647d432db161e7fd937178210eddfad6ca476341e1783e72",
-          options: {
-            showType: true,
-            showOwner: true,
-            showDisplay: true,
-          }
-        });
-        console.log(data);
-      } catch (error) {
-        console.error('Error fetching owned objects:', error);
-      }
-    };
-
-    if (account?.address) {
-      fetchData();
-    }
-  }, [account,client]);
 
   return (
     <>
       {/* <ConnectButton /> */}
       <Container className="mt-5">
-        {/* Add Connect Button Row */}
-        <Flex justify="end" className="mb-4 px-4">
-          <ConnectButton />
+        {/* Updated Navigation Bar */}
+        <Flex justify="between" className="mb-4 px-4">
+          <div className="flex gap-4">
+            <Link
+              href="/"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <FaHome className="w-4 h-4" />
+              Home
+            </Link>
+            <Link
+              href="/nfts"
+              className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
+            >
+              <FaCube className="w-4 h-4" />
+              View NFTs
+            </Link>
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="bg-gray-100 px-3 py-1.5 rounded-lg flex items-center gap-2">
+              <FaDollarSign className="flex-shrink-0" />
+              <span className="font-medium">{formattedBalance} SUI</span>
+            </div>
+            <ConnectButton />
+          </div>
         </Flex>
         <Container className="pt-2 px-4 bg-gray-50 min-h-[500px]">
           {/* Main Content */}
           <div className="space-y-6">
-            {/* How To Section */}
             {/* How To Section */}
             <motion.div
               initial={{ opacity: 0, y: -20 }}
@@ -215,6 +248,32 @@ export default function MindmapEditor() {
                     <h3 className="font-medium mb-1">5. Share</h3>
                     <p className="text-sm text-gray-600">Trade or display in Sui ecosystem</p>
                   </div>
+                </div>
+              </div>
+            </motion.div>
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-white rounded-xl shadow-lg p-6"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="font-medium text-gray-700">Mindmap Name</label>
+                  <input
+                    value={metadata.name}
+                    onChange={(e) => setMetadata(prev => ({ ...prev, name: e.target.value }))}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter mindmap name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="font-medium text-gray-700">Description</label>
+                  <input
+                    value={metadata.description}
+                    onChange={(e) => setMetadata(prev => ({ ...prev, description: e.target.value }))}
+                    className="w-full p-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter description"
+                  />
                 </div>
               </div>
             </motion.div>
@@ -322,9 +381,28 @@ export default function MindmapEditor() {
                     </button>
                     <button
                       onClick={handleMintNFT}
-                      className="px-3 py-1.5 text-sm bg-purple-100 hover:bg-purple-200 rounded-lg transition-colors"
+                      disabled={isMinting}
+                      className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      Mint NFT
+                      {isMinting ? (
+                        <>
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Minting...
+                        </>
+                      ) : (
+                        <>
+                          <FaCoins className="w-5 h-5" />
+                          Mint as NFT
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>
@@ -335,22 +413,7 @@ export default function MindmapEditor() {
             </div>
           </div>
         </Container>
-        <footer className="border-t bg-white mt-8 py-4">
-          <Container className="px-4">
-            <Flex justify="center" direction="column" align="center" gap="2">
-              <div className="flex items-center gap-2">
-                <FaBrain className="text-lg text-purple-600" />
-                <span className="font-bold text-lg">SuiMaps</span>
-              </div>
-              <p className="text-sm text-gray-500">
-                Visual Thinking on Sui Blockchain
-              </p>
-              <p className="text-xs text-gray-400">
-                © {new Date().getFullYear()} SuiMaps. All rights reserved.
-              </p>
-            </Flex>
-          </Container>
-        </footer>
+        <Footer />
       </Container>
     </>
   );
