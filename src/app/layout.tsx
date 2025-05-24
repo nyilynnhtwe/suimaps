@@ -4,11 +4,15 @@ import "@mysten/dapp-kit/dist/index.css";
 import "@radix-ui/themes/styles.css";
 import ClientProviders from "./provider/ClientProvider";
 import { Toaster } from "react-hot-toast";
+import Head from "next/head";
 
 // layout.tsx (NO "use client" here)
 
 export const metadata = {
   title: "SuiMaps - Decentralized Geospatial Platform",
+  icons: {
+    icon: '/icon_map.png',
+  },
   description: "Explore and contribute to decentralized mapping powered by the Sui Blockchain",
   keywords: ["SuiMaps", "DeFi Maps", "Blockchain Mapping", "Sui Blockchain", "Decentralized GIS"],
   authors: [{ name: "SuiMaps Team" }],
