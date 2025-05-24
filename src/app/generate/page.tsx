@@ -344,7 +344,7 @@ export default function MindmapEditor() {
                 <div className="flex justify-between items-center mb-4">
                   <h3 className="font-semibold flex items-center gap-2 text-blue-600">
                     <FaEdit className="w-5 h-5" />
-                    Mermaid Code Editor
+                    Code Editor
                   </h3>
                   <button
                     onClick={handleCopy}
