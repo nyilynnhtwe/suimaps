@@ -4,7 +4,6 @@ import "@mysten/dapp-kit/dist/index.css";
 import "@radix-ui/themes/styles.css";
 import ClientProviders from "./provider/ClientProvider";
 import { Toaster } from "react-hot-toast";
-import Head from "next/head";
 
 // layout.tsx (NO "use client" here)
 
