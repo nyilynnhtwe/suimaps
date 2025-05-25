@@ -4,5 +4,12 @@
       "source": "/(.*)",
       "destination": "/"
     }
+  ],
+  "redirects": [
+    {
+      "source": "/nft/:id",
+      "destination": "/",
+      "permanent": false
+    }
   ]
 }
