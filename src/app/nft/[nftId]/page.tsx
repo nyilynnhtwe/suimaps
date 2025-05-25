@@ -1,11 +1,11 @@
-// "use client";
-import { useCurrentAccount, useSuiClientQuery } from "@mysten/dapp-kit";
-import { useParams } from "next/navigation";
-import MermaidMindMap, { MermaidMindMapHandle } from "@/app/components/MermaidMindMap";
-import { Footer } from "@/app/components/Footer";
-import Link from "next/link";
-import { FaArrowLeft, FaFilePdf } from "react-icons/fa";
-import { useRef } from "react";
+// // "use client";
+// import { useCurrentAccount, useSuiClientQuery } from "@mysten/dapp-kit";
+// import { useParams } from "next/navigation";
+// import MermaidMindMap, { MermaidMindMapHandle } from "@/app/components/MermaidMindMap";
+// import { Footer } from "@/app/components/Footer";
+// import Link from "next/link";
+// import { FaArrowLeft, FaFilePdf } from "react-icons/fa";
+// import { useRef } from "react";
 
 
 
