@@ -127,7 +127,7 @@ export default function MindmapEditor() {
 
       const tx = new Transaction();
       tx.moveCall({
-        target: '0x4ab58320d7c46cfbd912e0875295a5395739e2dc951353f67b8fd49a96cfe7a3::SuiMapsNFT::mint_to_sender',
+        target: `${process.env.NEXT_PUBLIC_TEST_NET_PACKAGE_ID}::SuiMapsNFT::mint_to_sender`,
 
         arguments: [
           // using vector and option methods
