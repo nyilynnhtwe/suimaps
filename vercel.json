@@ -7,7 +7,7 @@
   ],
   "redirects": [
     {
-      "source": "/nft/:id",
+      "source": "/nft/:nftId",
       "destination": "/",
       "permanent": false
     }
