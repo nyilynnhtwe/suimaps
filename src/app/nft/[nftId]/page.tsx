@@ -9,6 +9,8 @@ import Link from "next/link";
 import { FaArrowLeft, FaFilePdf } from "react-icons/fa";
 import { useRef } from "react";
 
+function generateStaticParams() { }
+
 export default function NFTViewPage() {
   const { nftId } = useParams();
   const account = useCurrentAccount();
