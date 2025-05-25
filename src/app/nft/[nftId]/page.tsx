@@ -9,7 +9,7 @@ import { FaArrowLeft, FaFilePdf } from "react-icons/fa";
 import { useRef } from "react";
 import { Footer } from "@/app/components/Footer";
 
-function generateStaticParams() { }
+
 
 export default function NFTViewPage() {
   const { nftId } = useParams();
